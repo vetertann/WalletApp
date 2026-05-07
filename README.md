@@ -2,6 +2,10 @@
 
 Android app for tracking and planning expenses by parsing Alta Bank SMS messages from `Alta_Banka`.
 
+## Download
+
+- Debug APK: [releases/Wallet-debug.apk](releases/Wallet-debug.apk)
+
 ## Features
 
 - Imports SMS card payment notifications from the device inbox
