@@ -39,7 +39,7 @@ enum class Category(
     // Housing
     RENT_MORTGAGE("Rent / mortgage", Color(0xFF6D4C41), CategoryGroup.HOUSING),
     UTILITIES("Utilities", Color(0xFF8D6E63), CategoryGroup.HOUSING),
-    HOME_REPAIRS("Repairs & maintenance", Color(0xFFA1887F), CategoryGroup.HOUSING),
+    HOME_REPAIRS("Home repairs", Color(0xFFA1887F), CategoryGroup.HOUSING),
     FURNITURE_APPLIANCES("Furniture & appliances", Color(0xFFBCAAA4), CategoryGroup.HOUSING),
     BUILDING_FEES("Building fees", Color(0xFF795548), CategoryGroup.HOUSING),
     HOME_INSURANCE("Home insurance", Color(0xFF607D8B), CategoryGroup.HOUSING),
@@ -54,9 +54,9 @@ enum class Category(
 
     // Vehicle
     FUEL_CHARGING("Fuel / charging", Color(0xFF455A64), CategoryGroup.VEHICLE),
-    VEHICLE_MAINTENANCE("Maintenance & repairs", Color(0xFF607D8B), CategoryGroup.VEHICLE),
-    VEHICLE_INSURANCE("Insurance", Color(0xFF78909C), CategoryGroup.VEHICLE),
-    VEHICLE_REGISTRATION("Registration", Color(0xFF90A4AE), CategoryGroup.VEHICLE),
+    VEHICLE_MAINTENANCE("Vehicle maintenance", Color(0xFF607D8B), CategoryGroup.VEHICLE),
+    VEHICLE_INSURANCE("Vehicle insurance", Color(0xFF78909C), CategoryGroup.VEHICLE),
+    VEHICLE_REGISTRATION("Vehicle registration", Color(0xFF90A4AE), CategoryGroup.VEHICLE),
     CAR_WASH("Car wash", Color(0xFF4FC3F7), CategoryGroup.VEHICLE),
     FINES("Fines", Color(0xFFE53935), CategoryGroup.VEHICLE),
 
@@ -75,7 +75,7 @@ enum class Category(
     SOFTWARE_APPS("Software & apps", Color(0xFF00ACC1), CategoryGroup.COMMUNICATION_PC),
     HARDWARE_ACCESSORIES("Hardware & accessories", Color(0xFF00897B), CategoryGroup.COMMUNICATION_PC),
     HOSTING_CLOUD("Hosting & cloud", Color(0xFF43A047), CategoryGroup.COMMUNICATION_PC),
-    PC_REPAIRS("Repairs", Color(0xFF7CB342), CategoryGroup.COMMUNICATION_PC),
+    PC_REPAIRS("Tech repairs", Color(0xFF7CB342), CategoryGroup.COMMUNICATION_PC),
 
     // Financial expenses
     BANK_FEES("Bank fees", Color(0xFF455A64), CategoryGroup.FINANCIAL),

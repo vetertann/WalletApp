@@ -9,13 +9,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Assessment
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PieChart
 import androidx.compose.material.icons.outlined.Search
@@ -181,61 +178,25 @@ private fun AppTopBar(onSearchClick: () -> Unit) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .background(Color(0xFFE7EEF8), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "ME",
-                    color = Color(0xFF2C5E94),
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 13.sp
-                )
-            }
-            Column {
-                Text(
-                    text = "Hello",
-                    color = WalletSecondaryText,
-                    fontSize = 12.sp
-                )
-                Text(
-                    text = LocalDate.now().format(DateTimeFormatter.ofPattern("MMMM")),
-                    color = WalletPrimaryText,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp
-                )
-            }
+        Column {
+            Text(
+                text = "Hello",
+                color = WalletSecondaryText,
+                fontSize = 12.sp
+            )
+            Text(
+                text = LocalDate.now().format(DateTimeFormatter.ofPattern("MMMM")),
+                color = WalletPrimaryText,
+                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp
+            )
         }
-        Row {
-            IconButton(onClick = onSearchClick) {
-                Icon(
-                    Icons.Outlined.Search,
-                    contentDescription = "Search",
-                    tint = WalletPrimaryText
-                )
-            }
-            Box {
-                IconButton(onClick = { /* notifications hook reserved */ }) {
-                    Icon(
-                        Icons.Outlined.Notifications,
-                        contentDescription = "Notifications",
-                        tint = WalletPrimaryText
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(top = 9.dp, end = 10.dp)
-                        .size(8.dp)
-                        .background(Color(0xFFE24B4A), CircleShape)
-                )
-            }
+        IconButton(onClick = onSearchClick) {
+            Icon(
+                Icons.Outlined.Search,
+                contentDescription = "Search",
+                tint = WalletPrimaryText
+            )
         }
     }
 }

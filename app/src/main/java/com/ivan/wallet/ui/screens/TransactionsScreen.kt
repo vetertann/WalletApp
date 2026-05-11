@@ -79,6 +79,7 @@ import kotlin.math.abs
 
 private enum class PeriodFilter(val label: String, val days: Long?) {
     WEEK("Week", 7),
+    THIS_MONTH("This month", null),
     THIRTY("30 days", 30),
     SIX_MONTHS("6 months", 182),
     YEAR("Year", 365),
@@ -1115,6 +1116,15 @@ private fun activeRange(
                 val end = range.last - (offsetPeriods * (span + 1))
                 start..end
             }
+        }
+
+        PeriodFilter.THIS_MONTH -> {
+            val zone = ZoneId.systemDefault()
+            val today = Instant.ofEpochMilli(nowMs).atZone(zone).toLocalDate()
+            val targetMonth = java.time.YearMonth.from(today).minusMonths(offsetPeriods.toLong())
+            val start = targetMonth.atDay(1).atStartOfDay(zone).toInstant().toEpochMilli()
+            val end = targetMonth.plusMonths(1).atDay(1).atStartOfDay(zone).toInstant().toEpochMilli() - 1
+            start..end
         }
 
         else -> {

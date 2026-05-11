@@ -43,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ivan.wallet.data.model.Category
+import com.ivan.wallet.data.model.CategoryGroup
 import com.ivan.wallet.ui.BudgetUiModel
 import com.ivan.wallet.ui.TransactionUiModel
 import com.ivan.wallet.ui.WalletUiState
@@ -140,7 +141,7 @@ fun BudgetsScreen(
 
         item {
             Text(
-                text = "Subscriptions",
+                text = "Recurring expenses",
                 color = PrimaryText,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium
@@ -150,7 +151,7 @@ fun BudgetsScreen(
         if (recurring.isEmpty()) {
             item {
                 Text(
-                    text = "Recurring charges will surface here once we see the same merchant 3+ times at a steady cadence.",
+                    text = "Repeated charges will surface here once we see the same merchant 3+ times at a steady cadence.",
                     color = SecondaryText,
                     fontSize = 12.sp
                 )
@@ -360,12 +361,19 @@ private fun BudgetRow(
                         .size(10.dp)
                         .background(budget.category.accent, RoundedCornerShape(3.dp))
                 )
-                Text(
-                    text = budget.category.label,
-                    color = PrimaryText,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                Column {
+                    Text(
+                        text = budget.category.label,
+                        color = PrimaryText,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = "${budget.category.group.label} · ${budget.currency}",
+                        color = SecondaryText,
+                        fontSize = 11.sp
+                    )
+                }
             }
             IconButton(onClick = onDelete, modifier = Modifier.size(28.dp)) {
                 Icon(
@@ -552,6 +560,9 @@ private fun BudgetEditDialog(
                     CategoryPicker(
                         selected = category,
                         onSelect = { category = it },
+                        // Budgets only apply to expenses. Income categories are tracked
+                        // separately on Home; budgeting them gives confusing 0 / cap rows.
+                        visibleGroups = CategoryGroup.entries.filter { it != CategoryGroup.INCOME },
                         excluded = excluded,
                         allowNone = false
                     )
