@@ -93,6 +93,16 @@ fun StatsScreen(state: WalletUiState) {
     val avgPerActiveDay = totalSpent / activeDays
     val avgPerCalendarDay = totalSpent / range.days.coerceAtLeast(1L)
 
+    // Equivalent-length window immediately before the current range, for
+    // generating "vs previous" trend snippets.
+    val spanMs = range.days * 24L * 60L * 60L * 1000L
+    val previousExpenses = remember(expenses, range, now) {
+        expenses.filter { it.occurredAt in (now - 2 * spanMs)..(now - spanMs) }
+    }
+    val trends = remember(filtered, previousExpenses, currency) {
+        computeTrends(filtered, previousExpenses, currency)
+    }
+
     LaunchedEffect(range) { selectedIndex = null }
 
     LazyColumn(
@@ -122,6 +132,14 @@ fun StatsScreen(state: WalletUiState) {
                 avgPerActiveDay = avgPerActiveDay,
                 avgPerCalendarDay = avgPerCalendarDay
             )
+        }
+
+        if (trends.isNotEmpty()) {
+            item {
+                SectionTitle("Trends")
+                Spacer8()
+                TrendsList(snippets = trends)
+            }
         }
 
         item {
@@ -674,6 +692,127 @@ private fun TopMerchants(transactions: List<TransactionUiModel>, currency: Strin
             }
         }
     }
+}
+
+private enum class TrendKind { POSITIVE, NEGATIVE, NEUTRAL }
+
+private data class TrendSnippet(val text: String, val kind: TrendKind)
+
+@Composable
+private fun TrendsList(snippets: List<TrendSnippet>) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        snippets.forEach { s ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Surface)
+                    .padding(horizontal = 12.dp, vertical = 9.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .clip(RoundedCornerShape(3.dp))
+                        .background(
+                            when (s.kind) {
+                                TrendKind.POSITIVE -> Color(0xFF97C459)
+                                TrendKind.NEGATIVE -> Color(0xFFF09595)
+                                TrendKind.NEUTRAL -> TertiaryText
+                            }
+                        )
+                )
+                Text(text = s.text, color = PrimaryText, fontSize = 12.sp)
+            }
+        }
+    }
+}
+
+private fun computeTrends(
+    current: List<TransactionUiModel>,
+    previous: List<TransactionUiModel>,
+    currency: String
+): List<TrendSnippet> {
+    val out = mutableListOf<TrendSnippet>()
+
+    val curTotal = current.sumOf { it.amountMinor }
+    val prevTotal = previous.sumOf { it.amountMinor }
+    if (curTotal > 0L && prevTotal > 0L) {
+        val pct = ((curTotal - prevTotal) * 100.0 / prevTotal).toInt()
+        if (kotlin.math.abs(pct) >= 5) {
+            val arrow = if (pct > 0) "↑" else "↓"
+            out += TrendSnippet(
+                text = "Total spend $arrow ${kotlin.math.abs(pct)}% vs previous period",
+                kind = if (pct > 0) TrendKind.NEGATIVE else TrendKind.POSITIVE
+            )
+        }
+    }
+
+    // Category movers — compare per-category totals, surface the biggest jump
+    // and the biggest drop (excluding tiny categories to avoid noise).
+    val curCats = current.groupBy { it.category }
+        .mapValues { entry -> entry.value.sumOf { it.amountMinor } }
+    val prevCats = previous.groupBy { it.category }
+        .mapValues { entry -> entry.value.sumOf { it.amountMinor } }
+    val noiseFloor = 10_00L  // ignore movement under 10 currency units (1000 minor)
+    val candidates = (curCats.keys + prevCats.keys).filterNotNull().mapNotNull { cat ->
+        val c = curCats[cat] ?: 0L
+        val p = prevCats[cat] ?: 0L
+        if (c < noiseFloor && p < noiseFloor) return@mapNotNull null
+        val pct: Int = when {
+            p == 0L && c > 0L -> Int.MAX_VALUE
+            c == 0L && p > 0L -> Int.MIN_VALUE
+            p > 0L -> ((c - p) * 100.0 / p).toInt()
+            else -> 0
+        }
+        Triple(cat, pct, c)
+    }
+
+    candidates.filter { it.second > 0 }
+        .maxByOrNull { it.second }
+        ?.let { (cat, pct, _) ->
+            val text = when {
+                pct == Int.MAX_VALUE -> "${cat.label}: new this period"
+                pct >= 20 -> "${cat.label} ↑ $pct% vs previous"
+                else -> null
+            }
+            if (text != null) out += TrendSnippet(text, TrendKind.NEGATIVE)
+        }
+
+    candidates.filter { it.second < 0 }
+        .minByOrNull { it.second }
+        ?.let { (cat, pct, _) ->
+            val text = when {
+                pct == Int.MIN_VALUE -> "${cat.label}: nothing this period"
+                pct <= -20 -> "${cat.label} ↓ ${kotlin.math.abs(pct)}% vs previous"
+                else -> null
+            }
+            if (text != null) out += TrendSnippet(text, TrendKind.POSITIVE)
+        }
+
+    // Biggest single payment in the current range
+    current.maxByOrNull { it.amountMinor }?.let { tx ->
+        out += TrendSnippet(
+            text = "Biggest: ${tx.merchant} · ${tx.amountMinor.toMoney(currency)}",
+            kind = TrendKind.NEUTRAL
+        )
+    }
+
+    // Most-visited merchant (only if 3+ payments)
+    current.groupingBy { it.normalizedMerchant to it.merchant }
+        .eachCount()
+        .maxByOrNull { it.value }
+        ?.let { (key, count) ->
+            if (count >= 3) {
+                out += TrendSnippet(
+                    text = "${key.second}: $count payments — most frequent",
+                    kind = TrendKind.NEUTRAL
+                )
+            }
+        }
+
+    return out.take(5)
 }
 
 private data class GroupBucket(
